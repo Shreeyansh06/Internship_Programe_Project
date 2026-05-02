@@ -34,6 +34,20 @@ def _run_pipeline(job_id: str, file_data: io.BytesIO) -> None:
         jobs[job_id]["error"] = str(exc)
 
 
+@app.route("/")
+def index():
+    return jsonify({
+        "status": "online",
+        "message": "Churn Prediction API is running",
+        "endpoints": {
+            "upload_csv":  "POST /api/upload",
+            "autorun":     "POST /api/autorun",
+            "job_status":  "GET  /api/status/<job_id>",
+            "job_results": "GET  /api/results/<job_id>",
+        }
+    })
+
+
 @app.route("/api/upload", methods=["POST"])
 def upload():
     if "file" not in request.files:

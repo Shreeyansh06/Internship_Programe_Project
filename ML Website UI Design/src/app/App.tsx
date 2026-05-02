@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+
+const API_BASE = window.location.hostname === 'localhost'
+  ? ''
+  : 'https://internship-programe-project.onrender.com';
 import {
   Upload, Download, CheckCircle, AlertCircle,
   TrendingDown, DollarSign, Users, AlertTriangle, Loader2,
@@ -89,15 +93,15 @@ export default function App() {
     const autoRun = async () => {
       setUploadStatus('processing');
       try {
-        const res = await fetch('/api/autorun', { method: 'POST' });
+        const res = await fetch(`${API_BASE}/api/autorun`, { method: 'POST' });
         if (!res.ok) throw new Error('Autorun failed');
         const { job_id } = await res.json();
         pollRef.current = setInterval(async () => {
-          const statusRes = await fetch(`/api/status/${job_id}`);
+          const statusRes = await fetch(`${API_BASE}/api/status/${job_id}`);
           const statusData = await statusRes.json();
           if (statusData.status === 'complete') {
             clearInterval(pollRef.current!);
-            const resultsRes = await fetch(`/api/results/${job_id}`);
+            const resultsRes = await fetch(`${API_BASE}/api/results/${job_id}`);
             const results: PipelineResults = await resultsRes.json();
             setData(results);
             setUploadStatus('complete');
@@ -125,7 +129,7 @@ export default function App() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const res = await fetch(`${API_BASE}/api/upload`, { method: 'POST', body: formData });
       if (!res.ok) throw new Error(`Upload failed: ${res.statusText}`);
 
       const { job_id } = await res.json();
@@ -133,12 +137,12 @@ export default function App() {
 
       // Poll every 2 s for completion
       pollRef.current = setInterval(async () => {
-        const statusRes = await fetch(`/api/status/${job_id}`);
+        const statusRes = await fetch(`${API_BASE}/api/status/${job_id}`);
         const statusData = await statusRes.json();
 
         if (statusData.status === 'complete') {
           clearInterval(pollRef.current!);
-          const resultsRes = await fetch(`/api/results/${job_id}`);
+          const resultsRes = await fetch(`${API_BASE}/api/results/${job_id}`);
           const results: PipelineResults = await resultsRes.json();
           setData(results);
           setUploadStatus('complete');
