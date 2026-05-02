@@ -1,0 +1,5 @@
+services:
+  - type: web
+    name: internship-programe-project
+    runtime: docker
+    plan: free
