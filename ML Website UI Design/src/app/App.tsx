@@ -88,35 +88,6 @@ export default function App() {
   // Clean up polling on unmount
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
-  // Auto-run pipeline with default dataset on mount
-  useEffect(() => {
-    const autoRun = async () => {
-      setUploadStatus('processing');
-      try {
-        const res = await fetch(`${API_BASE}/api/autorun`, { method: 'POST' });
-        if (!res.ok) throw new Error('Autorun failed');
-        const { job_id } = await res.json();
-        pollRef.current = setInterval(async () => {
-          const statusRes = await fetch(`${API_BASE}/api/status/${job_id}`);
-          const statusData = await statusRes.json();
-          if (statusData.status === 'complete') {
-            clearInterval(pollRef.current!);
-            const resultsRes = await fetch(`${API_BASE}/api/results/${job_id}`);
-            const results: PipelineResults = await resultsRes.json();
-            setData(results);
-            setUploadStatus('complete');
-          } else if (statusData.status === 'error') {
-            clearInterval(pollRef.current!);
-            setErrorMessage(statusData.error ?? 'Pipeline failed');
-            setUploadStatus('error');
-          }
-        }, 2000);
-      } catch (err) {
-        setUploadStatus('idle');
-      }
-    };
-    autoRun();
-  }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
